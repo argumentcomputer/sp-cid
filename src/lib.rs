@@ -13,10 +13,7 @@ mod arb;
 
 pub use self::{
   cid::Cid as CidGeneric,
-  error::{
-    Error,
-    Result,
-  },
+  error::{Error, Result},
   version::Version,
 };
 
@@ -25,16 +22,13 @@ pub use sp_multihash;
 
 extern crate alloc;
 use bytecursor::ByteCursor;
-use unsigned_varint::{
-  decode,
-  encode as varint_encode,
-};
+use unsigned_varint::{decode, encode as varint_encode};
 
 /// Reader function from unsigned_varint
 pub fn varint_read_u64(r: &mut ByteCursor) -> Result<u64> {
   let mut b = varint_encode::u64_buffer();
   for i in 0..b.len() {
-    let n = r.read(&mut (b[i .. i + 1]));
+    let n = r.read(&mut (b[i..i + 1]));
     if n == 0 {
       return Err(Error::VarIntDecodeError);
     }

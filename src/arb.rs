@@ -1,27 +1,14 @@
 use sp_std::convert::TryFrom;
 
-use sp_multihash::{
-  Code,
-  Multihash,
-  MultihashDigest,
-};
+use sp_multihash::{Code, Multihash, MultihashDigest};
 
-use quickcheck::{
-  Arbitrary,
-  Gen,
-};
+use quickcheck::{Arbitrary, Gen};
 use rand::{
-  distributions::{
-    weighted::WeightedIndex,
-    Distribution,
-  },
+  distributions::{weighted::WeightedIndex, Distribution},
   Rng,
 };
 
-use crate::{
-  Cid,
-  Version,
-};
+use crate::{Cid, Version};
 
 impl Arbitrary for Version {
   fn arbitrary<G: Gen>(g: &mut G) -> Self {
@@ -37,8 +24,7 @@ impl Arbitrary for Cid {
       let data: Vec<u8> = Arbitrary::arbitrary(g);
       let hash = Code::Sha2_256.digest(&data);
       Cid::new_v0(hash).expect("sha2_256 is a valid hash for cid v0")
-    }
-    else {
+    } else {
       // In real world lower IPLD Codec codes more likely to happen, hence
       // distribute them with bias towards smaller values.
       let weights = [128, 32, 4, 4, 2, 2, 1, 1];

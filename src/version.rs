@@ -1,9 +1,6 @@
 use core::convert::TryFrom;
 
-use crate::error::{
-  Error,
-  Result,
-};
+use crate::error::{Error, Result};
 
 /// The version of the CID.
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Debug, Hash)]
