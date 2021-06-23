@@ -97,7 +97,7 @@ checksum = "65c1bf4a04a88c54f589125563643d773f3254b5c38571395e2b591c693bbc81"
 [[package]]
 name = "bytecursor"
 version = "0.1.0"
-source = "git+https://github.com/yatima-inc/bytecursor#ceddcf7148286582bdec89a9490a362fb602f4ff"
+source = "git+https://github.com/yatima-inc/bytecursor?branch=main#ceddcf7148286582bdec89a9490a362fb602f4ff"
 dependencies = [
  "sp-std",
 ]
@@ -494,7 +494,7 @@ dependencies = [
 [[package]]
 name = "sp-multihash"
 version = "0.1.0"
-source = "git+https://github.com/yatima-inc/sp-multihash#d39ee75143ac27395a6ace20861a45f2ba31638a"
+source = "git+https://github.com/yatima-inc/sp-multihash?branch=master#61920fe9b38551badc077c025039b8916e7a4641"
 dependencies = [
  "blake2b_simd",
  "blake2s_simd",
@@ -516,7 +516,7 @@ dependencies = [
 [[package]]
 name = "sp-multihash-derive"
 version = "0.1.0"
-source = "git+https://github.com/yatima-inc/sp-multihash#d39ee75143ac27395a6ace20861a45f2ba31638a"
+source = "git+https://github.com/yatima-inc/sp-multihash?branch=master#61920fe9b38551badc077c025039b8916e7a4641"
 dependencies = [
  "proc-macro-crate",
  "proc-macro-error",
