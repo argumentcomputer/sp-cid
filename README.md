@@ -25,7 +25,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-This project was forked from https://github.com/multiformats/cid 
+This project was forked from https://github.com/multiformats/rust-cid 
 (Copyright © 2017 Friedel Ziegelmayer) and contains code which is subject to the terms of the MIT License.
 
 ## Code of Conduct
