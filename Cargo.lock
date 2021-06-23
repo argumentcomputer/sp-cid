@@ -494,7 +494,7 @@ dependencies = [
 [[package]]
 name = "sp-multihash"
 version = "0.1.0"
-source = "git+https://github.com/yatima-inc/sp-multihash?branch=master#61920fe9b38551badc077c025039b8916e7a4641"
+source = "git+https://github.com/yatima-inc/sp-multihash?branch=master#6d5d489420ff21f3eeb1a5bc3144ff5ecd8494a0"
 dependencies = [
  "blake2b_simd",
  "blake2s_simd",
@@ -516,7 +516,7 @@ dependencies = [
 [[package]]
 name = "sp-multihash-derive"
 version = "0.1.0"
-source = "git+https://github.com/yatima-inc/sp-multihash?branch=master#61920fe9b38551badc077c025039b8916e7a4641"
+source = "git+https://github.com/yatima-inc/sp-multihash?branch=master#6d5d489420ff21f3eeb1a5bc3144ff5ecd8494a0"
 dependencies = [
  "proc-macro-crate",
  "proc-macro-error",
