@@ -24,7 +24,7 @@ serde = { version = "1.0.116", optional = true }
 rand = { version = "0.7.3", optional = true }
 sp-std = { version = "3", default-features = false }
 bytecursor = { git = "https://github.com/yatima-inc/bytecursor", branch = "main" }
-sp-multihash = { git = "https://github.com/yatima-inc/sp-multihash", branch = "master" }
+sp-multihash = { git = "https://github.com/yatima-inc/sp-multihash", branch = "main" }
 
 [dev-dependencies]
 serde_json = "1.0.59"
