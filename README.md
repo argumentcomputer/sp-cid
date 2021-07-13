@@ -2,6 +2,9 @@
 
 Cid library for `no_std` use within Substrate
 
+[![crates.io](https://img.shields.io/crates/v/sp-cid)](https://crates.io/crates/sp-cid)
+[![docs.rs](https://img.shields.io/docsrs/sp-cid.svg)](https://docs.rs/sp-cid)
+
 ## License
 
 ```
