@@ -1,41 +1,25 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs";
-    utils.url = "github:numtide/flake-utils";
-    naersk.url = "github:nmattia/naersk";
+    utils.url = "github:yatima-inc/nix-utils";
   };
 
   outputs =
     { self
-    , nixpkgs
     , utils
-    , naersk
     }:
-    utils.lib.eachDefaultSystem (system:
+    utils.inputs.flake-utils.lib.eachDefaultSystem (system:
     let
-      lib = nixpkgs.lib;
-      overlays = [ (import ./nix/rust-overlay.nix) ];
-      pkgs = import nixpkgs { inherit system overlays;};
-      rust = import ./nix/rust.nix { nixpkgs = pkgs; };
-      naersk-lib = naersk.lib."${system}".override {
-        rustc = rust;
-        cargo = rust;
-      };
-
+      lib = utils.lib.${system};
+      pkgs = utils.nixpkgs.${system};
+      inherit (lib) buildRustProject testRustProject rustDefault filterRustProject;
+      rust = rustDefault;
       crateName = "sp-cid";
-
-      project = naersk-lib.buildPackage {
-        name = crateName;
-        buildInputs = with pkgs; [ glibc ];
-        targets = [ ];
-        root = ./.;
-        remapPathPrefix =
-          true; # remove nix store references for a smaller output package
-      };
-
+      root = ./.;
     in
     {
-      packages.${crateName} = project;
+      packages.${crateName} = buildRustProject { inherit root; };
+
+      checks.${crateName} = testRustProject { doCheck = true; inherit root; cargoTestOptions = options: options ++ [ "--all-features" ]; };
 
       defaultPackage = self.packages.${system}.${crateName};
 
