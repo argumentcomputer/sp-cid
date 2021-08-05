@@ -6,17 +6,35 @@
 //!
 //! As a library author that works with CIDs that should support hashes of
 //! anysize, you would import the `Cid` type from this module.
-use sp_std::{borrow, convert::TryFrom, fmt, str, vec::Vec};
+use sp_std::{
+  borrow,
+  convert::TryFrom,
+  fmt,
+  str,
+  vec::Vec,
+};
 
-use alloc::string::{String, ToString};
+use alloc::string::{
+  String,
+  ToString,
+};
 use bytecursor::ByteCursor;
 use unsigned_varint::encode as varint_encode;
 
-use multibase::{encode as base_encode, Base};
-use sp_multihash::{MultihashGeneric as Multihash, Size};
+use multibase::{
+  encode as base_encode,
+  Base,
+};
+use multihash::{
+  MultihashGeneric as Multihash,
+  Size,
+};
 
 use crate::{
-  error::{Error, Result},
+  error::{
+    Error,
+    Result,
+  },
   version::Version,
 };
 
@@ -51,20 +69,12 @@ impl<S: Size> Cid<S> {
     if hash.code() != SHA2_256 {
       return Err(Error::InvalidCidV0Multihash);
     }
-    Ok(Self {
-      version: Version::V0,
-      codec: DAG_PB,
-      hash,
-    })
+    Ok(Self { version: Version::V0, codec: DAG_PB, hash })
   }
 
   /// Create a new CIDv1.
   pub fn new_v1(codec: u64, hash: Multihash<S>) -> Self {
-    Self {
-      version: Version::V1,
-      codec,
-      hash,
-    }
+    Self { version: Version::V1, codec, hash }
   }
 
   /// Create a new CID.
@@ -81,19 +91,13 @@ impl<S: Size> Cid<S> {
   }
 
   /// Returns the cid version.
-  pub fn version(&self) -> Version {
-    self.version
-  }
+  pub fn version(&self) -> Version { self.version }
 
   /// Returns the cid codec.
-  pub fn codec(&self) -> u64 {
-    self.codec
-  }
+  pub fn codec(&self) -> u64 { self.codec }
 
   /// Returns the cid multihash.
-  pub fn hash(&self) -> &Multihash<S> {
-    &self.hash
-  }
+  pub fn hash(&self) -> &Multihash<S> { &self.hash }
 
   /// Reads the bytes from a byte stream.
   pub fn read_bytes(r: &mut ByteCursor) -> Result<Self> {
@@ -112,9 +116,11 @@ impl<S: Size> Cid<S> {
         Ok(_) => (),
         Err(_) => return Err(Error::VarIntDecodeError),
       };
-      let mh = Multihash::wrap(version, &digest).expect("Digest is always 32 bytes.");
+      let mh =
+        Multihash::wrap(version, &digest).expect("Digest is always 32 bytes.");
       Self::new_v0(mh)
-    } else {
+    }
+    else {
       let version = match Version::try_from(version) {
         Ok(ver) => ver,
         Err(_) => return Err(Error::VarIntDecodeError),
@@ -184,12 +190,12 @@ impl<S: Size> Cid<S> {
   /// # Example
   ///
   /// ```
-  /// use sp_cid::Cid;
   /// use multibase::Base;
-  /// use sp_multihash::{
+  /// use multihash::{
   ///   Code,
   ///   MultihashDigest,
   /// };
+  /// use sp_cid::Cid;
   ///
   /// const RAW: u64 = 0x55;
   ///
@@ -202,7 +208,8 @@ impl<S: Size> Cid<S> {
       Version::V0 => {
         if base == Base::Base58Btc {
           Ok(self.to_string_v0())
-        } else {
+        }
+        else {
           Err(Error::InvalidCidV0Base)
         }
       }
@@ -213,11 +220,7 @@ impl<S: Size> Cid<S> {
 
 impl<S: Size> Default for Cid<S> {
   fn default() -> Self {
-    Self {
-      version: Version::V1,
-      codec: 0,
-      hash: Multihash::<S>::default(),
-    }
+    Self { version: Version::V1, codec: 0, hash: Multihash::<S>::default() }
   }
 }
 
@@ -239,7 +242,8 @@ impl<S: Size> fmt::Debug for Cid<S> {
         .field("codec", &self.codec())
         .field("hash", self.hash())
         .finish()
-    } else {
+    }
+    else {
       let output = match self.version {
         Version::V0 => self.to_string_v0(),
         Version::V1 => self.to_string_v1(),
@@ -252,9 +256,7 @@ impl<S: Size> fmt::Debug for Cid<S> {
 impl<S: Size> str::FromStr for Cid<S> {
   type Err = Error;
 
-  fn from_str(cid_str: &str) -> Result<Self> {
-    Self::try_from(cid_str)
-  }
+  fn from_str(cid_str: &str) -> Result<Self> { Self::try_from(cid_str) }
 }
 
 impl<S: Size> TryFrom<String> for Cid<S> {
@@ -285,7 +287,8 @@ impl<S: Size> TryFrom<&str> for Cid<S> {
         Ok(d) => d,
         Err(_) => return Err(Error::ParsingError),
       }
-    } else {
+    }
+    else {
       match multibase::decode(hash) {
         Ok((_, d)) => d,
         Err(_) => return Err(Error::VarIntDecodeError),
@@ -313,36 +316,25 @@ impl<S: Size> TryFrom<&[u8]> for Cid<S> {
 }
 
 impl<S: Size> From<&Cid<S>> for Cid<S>
-where
-  S::ArrayType: Copy,
+where S::ArrayType: Copy
 {
-  fn from(cid: &Cid<S>) -> Self {
-    *cid
-  }
+  fn from(cid: &Cid<S>) -> Self { *cid }
 }
 
 impl<S: Size> From<Cid<S>> for Vec<u8> {
-  fn from(cid: Cid<S>) -> Self {
-    cid.to_bytes()
-  }
+  fn from(cid: Cid<S>) -> Self { cid.to_bytes() }
 }
 
 impl<S: Size> From<Cid<S>> for String {
-  fn from(cid: Cid<S>) -> Self {
-    cid.to_string()
-  }
+  fn from(cid: Cid<S>) -> Self { cid.to_string() }
 }
 
 impl<'a, S: Size> From<Cid<S>> for borrow::Cow<'a, Cid<S>> {
-  fn from(from: Cid<S>) -> Self {
-    borrow::Cow::Owned(from)
-  }
+  fn from(from: Cid<S>) -> Self { borrow::Cow::Owned(from) }
 }
 
 impl<'a, S: Size> From<&'a Cid<S>> for borrow::Cow<'a, Cid<S>> {
-  fn from(from: &'a Cid<S>) -> Self {
-    borrow::Cow::Borrowed(from)
-  }
+  fn from(from: &'a Cid<S>) -> Self { borrow::Cow::Borrowed(from) }
 }
 
 #[cfg(test)]
@@ -351,8 +343,11 @@ mod tests {
   #[cfg(feature = "scale-codec")]
   fn test_cid_scale_codec() {
     use super::Cid;
-    use parity_scale_codec::{Decode, Encode};
-    use sp_multihash::U64;
+    use multihash::U64;
+    use parity_scale_codec::{
+      Decode,
+      Encode,
+    };
 
     let cid = Cid::<U64>::default();
     let bytes = cid.encode();
@@ -364,7 +359,7 @@ mod tests {
   #[cfg(feature = "serde-codec")]
   fn test_cid_serde() {
     use super::Cid;
-    use sp_multihash::U64;
+    use multihash::U64;
 
     let cid = Cid::<U64>::default();
     let bytes = serde_json::to_string(&cid).unwrap();
@@ -376,10 +371,12 @@ mod tests {
   #[cfg(feature = "std")]
   fn test_debug_instance() {
     use super::Cid;
-    use sp_multihash::U64;
+    use multihash::U64;
     use std::str::FromStr;
-    let cid =
-      Cid::<U64>::from_str("bafyreibjo4xmgaevkgud7mbifn3dzp4v4lyaui4yvqp3f2bqwtxcjrdqg4").unwrap();
+    let cid = Cid::<U64>::from_str(
+      "bafyreibjo4xmgaevkgud7mbifn3dzp4v4lyaui4yvqp3f2bqwtxcjrdqg4",
+    )
+    .unwrap();
     // short debug
     assert_eq!(
       &format!("{:?}", cid),

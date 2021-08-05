@@ -13,16 +13,22 @@ mod arb;
 
 pub use self::{
   cid::Cid as CidGeneric,
-  error::{Error, Result},
+  error::{
+    Error,
+    Result,
+  },
   version::Version,
 };
 
 pub use multibase;
-pub use sp_multihash;
+pub use multihash;
 
 extern crate alloc;
 use bytecursor::ByteCursor;
-use unsigned_varint::{decode, encode as varint_encode};
+use unsigned_varint::{
+  decode,
+  encode as varint_encode,
+};
 
 /// Reader function from unsigned_varint
 pub fn varint_read_u64(r: &mut ByteCursor) -> Result<u64> {
@@ -45,4 +51,4 @@ pub fn varint_read_u64(r: &mut ByteCursor) -> Result<u64> {
 ///
 /// If you need a CID that is generic over its digest size, use [`CidGeneric`]
 /// instead.
-pub type Cid = CidGeneric<sp_multihash::U64>;
+pub type Cid = CidGeneric<multihash::U64>;

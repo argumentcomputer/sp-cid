@@ -13,10 +13,10 @@ categories = ["no-std"]
 
 [features]
 default = ["multibase"]
-std = ["multibase", "sp-multihash/std", "unsigned-varint/std"]
-arb = ["quickcheck", "rand", "sp-multihash/arb"]
-scale-codec = ["parity-scale-codec", "sp-multihash/scale-codec"]
-serde-codec = ["serde", "sp-multihash/serde-codec"]
+std = ["multibase", "multihash/std", "unsigned-varint/std"]
+arb = ["quickcheck", "rand", "multihash/arb"]
+scale-codec = ["parity-scale-codec", "multihash/scale-codec"]
+serde-codec = ["serde", "multihash/serde-codec"]
 
 [dependencies]
 unsigned-varint = { version = "0.7.0", default-features = false }
@@ -28,7 +28,8 @@ serde = { version = "1.0.116", optional = true }
 rand = { version = "0.7.3", optional = true }
 sp-std = { version = "3", default-features = false }
 bytecursor = "0.1.0"
-sp-multihash = "0.1.0"
+#sp-multihash = "0.1.0"
+multihash = { version = "0.14.0", default-features = false, features = ["sha2", "sha3", "blake3"] }
 
 [dev-dependencies]
 serde_json = "1.0.59"
