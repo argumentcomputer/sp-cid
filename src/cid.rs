@@ -6,72 +6,77 @@
 //!
 //! As a library author that works with CIDs that should support hashes of
 //! anysize, you would import the `Cid` type from this module.
-use sp_std::{borrow, convert::TryFrom, fmt, str, vec::Vec};
+use sp_std::{
+  borrow,
+  convert::TryFrom,
+  fmt,
+  str,
+  vec::Vec,
+};
 
-use alloc::string::{String, ToString};
+use alloc::string::{
+  String,
+  ToString,
+};
 use bytecursor::ByteCursor;
 use unsigned_varint::encode as varint_encode;
 
-use multibase::{encode as base_encode, Base};
-use sp_multihash::{MultihashGeneric as Multihash, Size};
+use multibase::{
+  encode as base_encode,
+  Base,
+};
+use sp_multihash::MultihashGeneric as Multihash;
 
 use crate::{
-  error::{Error, Result},
+  codec,
+  codec::Codec,
+  error::{
+    Error,
+    Result,
+  },
   version::Version,
 };
-
-/// DAG-PB multicodec code
-const DAG_PB: u64 = 0x70;
-/// The SHA_256 multicodec code
-const SHA2_256: u64 = 0x12;
 
 /// Representation of a CID.
 ///
 /// The generic is about the allocated size of the multihash.
-#[derive(PartialEq, Eq, Clone, PartialOrd, Ord, Hash)]
+#[derive(PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "scale-codec", derive(parity_scale_codec::Decode))]
 #[cfg_attr(feature = "scale-codec", derive(parity_scale_codec::Encode))]
 #[cfg_attr(feature = "serde-codec", derive(serde::Deserialize))]
 #[cfg_attr(feature = "serde-codec", derive(serde::Serialize))]
-#[cfg_attr(feature = "serde-codec", serde(bound = "S: Size"))]
-pub struct Cid<S: Size> {
+pub struct Cid<const S: usize> {
   /// The version of CID.
   version: Version,
   /// The codec of CID.
-  codec: u64,
+  codec: Codec,
   /// The multihash of CID.
   hash: Multihash<S>,
 }
 
-impl<S: Size> Copy for Cid<S> where S::ArrayType: Copy {}
-
-impl<S: Size> Cid<S> {
+impl<const S: usize> Cid<S> {
   /// Create a new CIDv0.
   pub fn new_v0(hash: Multihash<S>) -> Result<Self> {
-    if hash.code() != SHA2_256 {
+    if hash.code() != codec::SHA2_256 {
       return Err(Error::InvalidCidV0Multihash);
     }
-    Ok(Self {
-      version: Version::V0,
-      codec: DAG_PB,
-      hash,
-    })
+    Ok(Self { codec: codec::DAG_PB, version: Version::V0, hash })
   }
 
   /// Create a new CIDv1.
-  pub fn new_v1(codec: u64, hash: Multihash<S>) -> Self {
-    Self {
-      version: Version::V1,
-      codec,
-      hash,
-    }
+  pub fn new_v1(codec: Codec, hash: Multihash<S>) -> Self {
+    Self { codec, version: Version::V1, hash }
   }
 
   /// Create a new CID.
-  pub fn new(version: Version, codec: u64, hash: Multihash<S>) -> Result<Self> {
+  pub fn new(
+    version: Version,
+    codec: Codec,
+    hash: Multihash<S>,
+  ) -> Result<Self> {
     match version {
       Version::V0 => {
-        if codec != DAG_PB {
+        if codec != codec::DAG_PB {
           return Err(Error::InvalidCidV0Codec);
         }
         Self::new_v0(hash)
@@ -81,19 +86,13 @@ impl<S: Size> Cid<S> {
   }
 
   /// Returns the cid version.
-  pub fn version(&self) -> Version {
-    self.version
-  }
+  pub fn version(&self) -> Version { self.version }
 
   /// Returns the cid codec.
-  pub fn codec(&self) -> u64 {
-    self.codec
-  }
+  pub fn codec(&self) -> u64 { self.codec }
 
   /// Returns the cid multihash.
-  pub fn hash(&self) -> &Multihash<S> {
-    &self.hash
-  }
+  pub fn hash(&self) -> &Multihash<S> { &self.hash }
 
   /// Reads the bytes from a byte stream.
   pub fn read_bytes(r: &mut ByteCursor) -> Result<Self> {
@@ -112,9 +111,11 @@ impl<S: Size> Cid<S> {
         Ok(_) => (),
         Err(_) => return Err(Error::VarIntDecodeError),
       };
-      let mh = Multihash::wrap(version, &digest).expect("Digest is always 32 bytes.");
+      let mh =
+        Multihash::wrap(version, &digest).expect("Digest is always 32 bytes.");
       Self::new_v0(mh)
-    } else {
+    }
+    else {
       let version = match Version::try_from(version) {
         Ok(ver) => ver,
         Err(_) => return Err(Error::VarIntDecodeError),
@@ -184,16 +185,17 @@ impl<S: Size> Cid<S> {
   /// # Example
   ///
   /// ```
-  /// use sp_cid::Cid;
   /// use multibase::Base;
+  /// use sp_cid::{
+  ///   codec,
+  ///   Cid,
+  /// };
   /// use sp_multihash::{
   ///   Code,
   ///   MultihashDigest,
   /// };
   ///
-  /// const RAW: u64 = 0x55;
-  ///
-  /// let cid = Cid::new_v1(RAW, Code::Sha2_256.digest(b"foo"));
+  /// let cid = Cid::new_v1(codec::RAW, Code::Sha2_256.digest(b"foo"));
   /// let encoded = cid.to_string_of_base(Base::Base64).unwrap();
   /// assert_eq!(encoded, "mAVUSICwmtGto/8aP+ZtFPB0wQTQTQi1wZIO/oPmKXohiZueu");
   /// ```
@@ -202,7 +204,8 @@ impl<S: Size> Cid<S> {
       Version::V0 => {
         if base == Base::Base58Btc {
           Ok(self.to_string_v0())
-        } else {
+        }
+        else {
           Err(Error::InvalidCidV0Base)
         }
       }
@@ -210,18 +213,17 @@ impl<S: Size> Cid<S> {
     }
   }
 }
-
-impl<S: Size> Default for Cid<S> {
+impl<const S: usize> Default for Cid<S> {
   fn default() -> Self {
     Self {
+      codec: codec::IDENTITY,
       version: Version::V1,
-      codec: 0,
       hash: Multihash::<S>::default(),
     }
   }
 }
 
-impl<S: Size> fmt::Display for Cid<S> {
+impl<const S: usize> fmt::Display for Cid<S> {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     let output = match self.version {
       Version::V0 => self.to_string_v0(),
@@ -231,7 +233,7 @@ impl<S: Size> fmt::Display for Cid<S> {
   }
 }
 
-impl<S: Size> fmt::Debug for Cid<S> {
+impl<const S: usize> fmt::Debug for Cid<S> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     if f.alternate() {
       f.debug_struct("Cid")
@@ -239,7 +241,8 @@ impl<S: Size> fmt::Debug for Cid<S> {
         .field("codec", &self.codec())
         .field("hash", self.hash())
         .finish()
-    } else {
+    }
+    else {
       let output = match self.version {
         Version::V0 => self.to_string_v0(),
         Version::V1 => self.to_string_v1(),
@@ -249,15 +252,13 @@ impl<S: Size> fmt::Debug for Cid<S> {
   }
 }
 
-impl<S: Size> str::FromStr for Cid<S> {
+impl<const S: usize> str::FromStr for Cid<S> {
   type Err = Error;
 
-  fn from_str(cid_str: &str) -> Result<Self> {
-    Self::try_from(cid_str)
-  }
+  fn from_str(cid_str: &str) -> Result<Self> { Self::try_from(cid_str) }
 }
 
-impl<S: Size> TryFrom<String> for Cid<S> {
+impl<const S: usize> TryFrom<String> for Cid<S> {
   type Error = Error;
 
   fn try_from(cid_str: String) -> Result<Self> {
@@ -265,7 +266,7 @@ impl<S: Size> TryFrom<String> for Cid<S> {
   }
 }
 
-impl<S: Size> TryFrom<&str> for Cid<S> {
+impl<const S: usize> TryFrom<&str> for Cid<S> {
   type Error = Error;
 
   fn try_from(cid_str: &str) -> Result<Self> {
@@ -285,7 +286,8 @@ impl<S: Size> TryFrom<&str> for Cid<S> {
         Ok(d) => d,
         Err(_) => return Err(Error::ParsingError),
       }
-    } else {
+    }
+    else {
       match multibase::decode(hash) {
         Ok((_, d)) => d,
         Err(_) => return Err(Error::VarIntDecodeError),
@@ -296,7 +298,7 @@ impl<S: Size> TryFrom<&str> for Cid<S> {
   }
 }
 
-impl<S: Size> TryFrom<Vec<u8>> for Cid<S> {
+impl<const S: usize> TryFrom<Vec<u8>> for Cid<S> {
   type Error = Error;
 
   fn try_from(bytes: Vec<u8>) -> Result<Self> {
@@ -304,7 +306,7 @@ impl<S: Size> TryFrom<Vec<u8>> for Cid<S> {
   }
 }
 
-impl<S: Size> TryFrom<&[u8]> for Cid<S> {
+impl<const S: usize> TryFrom<&[u8]> for Cid<S> {
   type Error = Error;
 
   fn try_from(bytes: &[u8]) -> Result<Self> {
@@ -312,37 +314,24 @@ impl<S: Size> TryFrom<&[u8]> for Cid<S> {
   }
 }
 
-impl<S: Size> From<&Cid<S>> for Cid<S>
-where
-  S::ArrayType: Copy,
-{
-  fn from(cid: &Cid<S>) -> Self {
-    *cid
-  }
+impl<const S: usize> From<&Cid<S>> for Cid<S> {
+  fn from(cid: &Cid<S>) -> Self { *cid }
 }
 
-impl<S: Size> From<Cid<S>> for Vec<u8> {
-  fn from(cid: Cid<S>) -> Self {
-    cid.to_bytes()
-  }
+impl<const S: usize> From<Cid<S>> for Vec<u8> {
+  fn from(cid: Cid<S>) -> Self { cid.to_bytes() }
 }
 
-impl<S: Size> From<Cid<S>> for String {
-  fn from(cid: Cid<S>) -> Self {
-    cid.to_string()
-  }
+impl<const S: usize> From<Cid<S>> for String {
+  fn from(cid: Cid<S>) -> Self { cid.to_string() }
 }
 
-impl<'a, S: Size> From<Cid<S>> for borrow::Cow<'a, Cid<S>> {
-  fn from(from: Cid<S>) -> Self {
-    borrow::Cow::Owned(from)
-  }
+impl<'a, const S: usize> From<Cid<S>> for borrow::Cow<'a, Cid<S>> {
+  fn from(from: Cid<S>) -> Self { borrow::Cow::Owned(from) }
 }
 
-impl<'a, S: Size> From<&'a Cid<S>> for borrow::Cow<'a, Cid<S>> {
-  fn from(from: &'a Cid<S>) -> Self {
-    borrow::Cow::Borrowed(from)
-  }
+impl<'a, const S: usize> From<&'a Cid<S>> for borrow::Cow<'a, Cid<S>> {
+  fn from(from: &'a Cid<S>) -> Self { borrow::Cow::Borrowed(from) }
 }
 
 #[cfg(test)]
@@ -351,10 +340,12 @@ mod tests {
   #[cfg(feature = "scale-codec")]
   fn test_cid_scale_codec() {
     use super::Cid;
-    use parity_scale_codec::{Decode, Encode};
-    use sp_multihash::U64;
+    use parity_scale_codec::{
+      Decode,
+      Encode,
+    };
 
-    let cid = Cid::<U64>::default();
+    let cid = Cid::<64>::default();
     let bytes = cid.encode();
     let cid2 = Cid::decode(&mut &bytes[..]).unwrap();
     assert_eq!(cid, cid2);
@@ -364,9 +355,8 @@ mod tests {
   #[cfg(feature = "serde-codec")]
   fn test_cid_serde() {
     use super::Cid;
-    use sp_multihash::U64;
 
-    let cid = Cid::<U64>::default();
+    let cid = Cid::<64>::default();
     let bytes = serde_json::to_string(&cid).unwrap();
     let cid2 = serde_json::from_str(&bytes).unwrap();
     assert_eq!(cid, cid2);
@@ -376,10 +366,11 @@ mod tests {
   #[cfg(feature = "std")]
   fn test_debug_instance() {
     use super::Cid;
-    use sp_multihash::U64;
     use std::str::FromStr;
-    let cid =
-      Cid::<U64>::from_str("bafyreibjo4xmgaevkgud7mbifn3dzp4v4lyaui4yvqp3f2bqwtxcjrdqg4").unwrap();
+    let cid = Cid::<64>::from_str(
+      "bafyreibjo4xmgaevkgud7mbifn3dzp4v4lyaui4yvqp3f2bqwtxcjrdqg4",
+    )
+    .unwrap();
     // short debug
     assert_eq!(
       &format!("{:?}", cid),

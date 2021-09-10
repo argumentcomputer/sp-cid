@@ -1,6 +1,6 @@
 [package]
 name = "sp-cid"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2018"
 authors = ["Samuel Burnham <sam@yatima.io>", "John Burnham <john@yatima.io>"]
 license = "MIT"
@@ -28,7 +28,7 @@ serde = { version = "1.0.116", optional = true }
 rand = { version = "0.7.3", optional = true }
 sp-std = { version = "3", default-features = false }
 bytecursor = "0.1.0"
-sp-multihash = "0.1.0"
+sp-multihash = { git = "https://github.com/yatima-inc/sp-multihash", branch = "const-generics" }
 
 [dev-dependencies]
 serde_json = "1.0.59"
