@@ -1,12 +1,24 @@
 use std::{
   collections::HashMap,
-  convert::{TryFrom, TryInto},
+  convert::{
+    TryFrom,
+    TryInto,
+  },
   str::FromStr,
 };
 
 use multibase::Base;
-use sp_cid::{Cid, CidGeneric, Error, Version};
-use sp_multihash::{derive::Multihash, typenum::U128, Code, MultihashDigest, Size};
+use sp_cid::{
+  Cid,
+  CidGeneric,
+  Error,
+  Version,
+};
+use sp_multihash::{
+  derive::Multihash,
+  Code,
+  MultihashDigest,
+};
 
 const RAW: u64 = 0x55;
 const DAG_PB: u64 = 0x70;
@@ -48,9 +60,8 @@ fn v0_handling() {
 
 #[test]
 fn from_str() {
-  let cid: Cid = "QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n"
-    .parse()
-    .unwrap();
+  let cid: Cid =
+    "QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zR1n".parse().unwrap();
   assert_eq!(cid.version(), Version::V0);
 
   let bad = "QmdfTbBqBPQ7VNxZEYEj14VmRuZBkqFbiwReogJgS1zIII".parse::<Cid>();
@@ -92,7 +103,10 @@ fn test_hash() {
 
 #[test]
 fn test_base32() {
-  let cid = Cid::from_str("bafkreibme22gw2h7y2h7tg2fhqotaqjucnbc24deqo72b6mkl2egezxhvy").unwrap();
+  let cid = Cid::from_str(
+    "bafkreibme22gw2h7y2h7tg2fhqotaqjucnbc24deqo72b6mkl2egezxhvy",
+  )
+  .unwrap();
   assert_eq!(cid.version(), Version::V1);
   assert_eq!(cid.codec(), RAW);
   assert_eq!(cid.hash(), &Code::Sha2_256.digest(b"foo"));
@@ -100,19 +114,18 @@ fn test_base32() {
 
 #[test]
 fn to_string() {
-  let expected_cid = "bafkreibme22gw2h7y2h7tg2fhqotaqjucnbc24deqo72b6mkl2egezxhvy";
+  let expected_cid =
+    "bafkreibme22gw2h7y2h7tg2fhqotaqjucnbc24deqo72b6mkl2egezxhvy";
   let cid = Cid::new_v1(RAW, Code::Sha2_256.digest(b"foo"));
   assert_eq!(cid.to_string(), expected_cid);
 }
 
 #[test]
 fn to_string_of_base32() {
-  let expected_cid = "bafkreibme22gw2h7y2h7tg2fhqotaqjucnbc24deqo72b6mkl2egezxhvy";
+  let expected_cid =
+    "bafkreibme22gw2h7y2h7tg2fhqotaqjucnbc24deqo72b6mkl2egezxhvy";
   let cid = Cid::new_v1(RAW, Code::Sha2_256.digest(b"foo"));
-  assert_eq!(
-    cid.to_string_of_base(Base::Base32Lower).unwrap(),
-    expected_cid
-  );
+  assert_eq!(cid.to_string_of_base(Base::Base32Lower).unwrap(), expected_cid);
 }
 
 #[test]
@@ -126,10 +139,7 @@ fn to_string_of_base64() {
 fn to_string_of_base58_v0() {
   let expected_cid = "QmRJzsvyCQyizr73Gmms8ZRtvNxmgqumxc2KUp71dfEmoj";
   let cid = Cid::new_v0(Code::Sha2_256.digest(b"foo")).unwrap();
-  assert_eq!(
-    cid.to_string_of_base(Base::Base58Btc).unwrap(),
-    expected_cid
-  );
+  assert_eq!(cid.to_string_of_base(Base::Base58Btc).unwrap(), expected_cid);
 }
 
 #[test]
@@ -141,7 +151,9 @@ fn to_string_of_base_v0_error() {
   ));
 }
 
-fn a_function_that_takes_a_generic_cid<S: Size>(cid: &CidGeneric<S>) -> String {
+fn a_function_that_takes_a_generic_cid<const S: usize>(
+  cid: &CidGeneric<S>,
+) -> String {
   cid.to_string()
 }
 
@@ -151,14 +163,15 @@ fn a_function_that_takes_a_generic_cid<S: Size>(cid: &CidGeneric<S>) -> String {
 #[test]
 fn method_can_take_differently_sized_cids() {
   #[derive(Clone, Copy, Debug, Eq, PartialEq, Multihash)]
-  #[mh(alloc_size = U128)]
+  #[mh(alloc_size = 128)]
   enum Code128 {
-    #[mh(code = 0x12, hasher = sp_multihash::Sha2_256, digest = sp_multihash::Sha2Digest<sp_multihash::U32>)]
+    #[mh(code = 0x12, hasher = sp_multihash::Sha2_256, digest = sp_multihash::Sha2Digest<32>)]
     Sha2_256,
   }
 
   let cid_default = Cid::new_v1(RAW, Code::Sha2_256.digest(b"foo"));
-  let cid_128 = CidGeneric::<U128>::new_v1(RAW, Code128::Sha2_256.digest(b"foo"));
+  let cid_128 =
+    CidGeneric::<128>::new_v1(RAW, Code128::Sha2_256.digest(b"foo"));
 
   assert_eq!(
     a_function_that_takes_a_generic_cid(&cid_default),
