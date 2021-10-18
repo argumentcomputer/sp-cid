@@ -6,18 +6,21 @@
 //!
 //! As a library author that works with CIDs that should support hashes of
 //! anysize, you would import the `Cid` type from this module.
-use sp_std::{
-  borrow,
+use core::{
   convert::TryFrom,
   fmt,
+};
+
+use alloc::{
+  borrow,
   str,
+  string::{
+    String,
+    ToString,
+  },
   vec::Vec,
 };
 
-use alloc::string::{
-  String,
-  ToString,
-};
 use bytecursor::ByteCursor;
 use unsigned_varint::encode as varint_encode;
 

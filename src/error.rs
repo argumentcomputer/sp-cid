@@ -52,15 +52,11 @@ impl fmt::Display for Error {
 
 #[cfg(feature = "std")]
 impl From<multibase::Error> for Error {
-  fn from(_: multibase::Error) -> Error {
-    Error::ParsingError
-  }
+  fn from(_: multibase::Error) -> Error { Error::ParsingError }
 }
 
 impl From<sp_multihash::Error> for Error {
-  fn from(_: sp_multihash::Error) -> Error {
-    Error::ParsingError
-  }
+  fn from(_: sp_multihash::Error) -> Error { Error::ParsingError }
 }
 
 impl From<unsigned_varint::decode::Error> for Error {
@@ -82,7 +78,5 @@ impl From<unsigned_varint::io::ReadError> for Error {
 
 #[cfg(feature = "std")]
 impl From<std::io::Error> for Error {
-  fn from(err: std::io::Error) -> Self {
-    Self::Io(err)
-  }
+  fn from(err: std::io::Error) -> Self { Self::Io(err) }
 }
