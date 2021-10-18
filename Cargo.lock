@@ -509,7 +509,6 @@ dependencies = [
  "serde",
  "serde_json",
  "sp-multihash",
- "sp-std",
  "unsigned-varint",
 ]
 

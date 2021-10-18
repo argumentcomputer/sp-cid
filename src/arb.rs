@@ -1,7 +1,6 @@
-use sp_std::{
-  convert::TryFrom,
-  vec::Vec,
-};
+use core::convert::TryFrom;
+
+use alloc::vec::Vec;
 
 use sp_multihash::{
   Code,

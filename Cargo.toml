@@ -1,6 +1,6 @@
 [package]
 name = "sp-cid"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2018"
 authors = ["Samuel Burnham <sam@yatima.io>", "John Burnham <john@yatima.io>"]
 license = "MIT"
@@ -26,9 +26,11 @@ parity-scale-codec = { version = "2.1.1", default-features = false, features = [
 quickcheck = { version = "0.9.2", optional = true }
 serde = { version = "1.0.116", optional = true }
 rand = { version = "0.7.3", optional = true }
-sp-std = { version = "3", default-features = false }
 bytecursor = "0.1.0"
 sp-multihash = "0.2.0"
 
 [dev-dependencies]
 serde_json = "1.0.59"
+quickcheck = "0.9.2"
+rand = "0.7.3"
+sp-multihash = { version = "0.2.0", features = ["arb"] }
