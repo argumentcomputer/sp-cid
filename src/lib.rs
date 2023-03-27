@@ -37,13 +37,16 @@ use unsigned_varint::{
 pub fn varint_read_u64(r: &mut ByteCursor) -> Result<u64> {
   let mut b = varint_encode::u64_buffer();
   for i in 0..b.len() {
-    let n = r.read(&mut (b[i..i + 1]));
-    if n == 0 {
-      return Err(Error::VarIntDecodeError);
-    }
-    if decode::is_last(b[i]) {
-      return Ok(decode::u64(&b[..=i]).unwrap().0);
-    }
+      let n = r.read(&mut (b[i..i + 1]));
+      if n == 0 {
+          return Err(Error::VarIntDecodeError);
+      }
+      if decode::is_last(b[i]) {
+          match decode::u64(&b[..=i]) {
+              Ok(val) => return Ok(val.0),
+              Err(_) => return Err(Error::VarIntDecodeError),
+          }
+      }
   }
   Err(Error::VarIntDecodeError)
 }
